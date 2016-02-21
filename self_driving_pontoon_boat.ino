@@ -8,6 +8,12 @@
 // Potentiometer, or rotary encoder for steeting
 // Slide pot for throttle
 
+//TODO: turn off motor (heat)
+
+// toggle switches
+int auto_mode;
+int auto_mode_pin = 7;
+
 //stepper motor
 #include <Stepper.h>
 #define STEPS 200                       // number of steps in steering stepper motor
@@ -38,31 +44,68 @@ void setup(){
   steering.setSpeed(60);
   
   throttle.attach(13);
+
+  auto_mode = digitalRead(auto_mode_pin);
 }
 
 
 
 void loop(){
+  
+  if (auto_mode > 0){
+    
+    auto_throttle();
 
-  pwm_steering = pulseIn(STEERING_PIN, HIGH); // PWM decoding raw input 
+    auto_steering();
+      
+  }
+  else{
+
+    manual_throttle();
+
+    manual_steering();
+    
+  }
+
+
+
+}
+
+void manual_throttle(){
+  
+}
+
+void manual_steering(){
+  
+}
+
+void auto_throttle(){
+  
+  // autopilot throttle
+ 
   pwm_throttle = pulseIn(THROTTLE_PIN, HIGH);
 
-  steeringPos = map(pwm_steering, 1000, 1900, -255, 255);
   throttlePos = map(pwm_throttle, 1000, 1900, 0, 180);
-
-  Serial.println("T");
   
   throttle.write(throttlePos);
+
+}
+
+void auto_steering(){
+
+  // autopilot steering
+
+  pwm_steering = pulseIn(STEERING_PIN, HIGH); // PWM decoding raw input
+
+  steeringPos = map(pwm_steering, 1000, 1900, -255, 255);
   
-  Serial.println(throttlePos);
-  
-  //if (pwm_value > current_pos){
-  //  steering.step(1);
-  //  current_pos++;
-  //}
-  //else if (pwm_value < current_pos){
-  //  steering.step(-1);
-  //  current_pos--;
-  //}
+  if (steeringPos > current_pos){
+    steering.step(1);
+    current_pos++;
+  }
+  else if (steeringPos < current_pos){
+    steering.step(-1);
+    current_pos--;
+  }
 
 }
