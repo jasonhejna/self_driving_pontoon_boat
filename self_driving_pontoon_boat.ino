@@ -10,13 +10,18 @@
 
 //TODO: turn off motor (heat)
 
+// LED
+unsigned int ledPin = 12;
+
 // toggle switches
 int auto_mode;
 unsigned int auto_mode_pin = 7;
 
-//manual control potentiometer
+//manual control potentiometers
 unsigned int manual_steering_pin = 2;
-int manual_steering_val = 0;
+int manual_steering_val;
+unsigned int manual_throttle_pin = 2;
+int manual_throttle_val;
 
 //stepper motor
 #include <Stepper.h>
@@ -24,7 +29,7 @@ int manual_steering_val = 0;
 Stepper steering(STEPS, 8, 9, 10, 11);
 int steeringPos;
 int stepper_midpoint = 0;
-int current_pos = 0;
+int current_steering_pos = 0;
 
 // pwm decode
 unsigned int STEERING_PIN = 2;
@@ -50,6 +55,8 @@ void setup(){
   throttle.attach(13);
 
   auto_mode = digitalRead(auto_mode_pin);
+
+  pinMode(ledPin, OUTPUT);
 }
 
 
@@ -59,45 +66,49 @@ void loop(){
   auto_mode = digitalRead(auto_mode_pin);
   
   if (auto_mode > 0){
-    
+
     auto_throttle();
 
     auto_steering();
+
+    digitalWrite(ledPin, HIGH);
       
   }
   else{
 
-    //manual_throttle();
+    manual_throttle();
 
-    manual_steering();
+    //manual_steering(); //TODO set pin to new potentiometer and uncomment
+
+    digitalWrite(ledPin, LOW);
     
   }
-
-
 
 }
 
 void manual_throttle(){
   
+  manual_throttle_val = analogRead(manual_throttle_pin);
+
+  throttlePos = map(manual_throttle_val, 0, 1024, 0, 180);
+  
+  throttle.write(throttlePos);
+  
 }
 
 void manual_steering(){
   
-  //Serial.println("m");
-  
   manual_steering_val = analogRead(manual_steering_pin);
-
-  //Serial.println(manual_steering_val);
 
   steeringPos = map(manual_steering_val, 0, 1024, -255, 255);
   
-  if (steeringPos > current_pos){
+  if (steeringPos > current_steering_pos){
     steering.step(1);
-    current_pos++;
+    current_steering_pos++;
   }
-  else if (steeringPos < current_pos){
+  else if (steeringPos < current_steering_pos){
     steering.step(-1);
-    current_pos--;
+    current_steering_pos--;
   }
   
 }
@@ -122,13 +133,13 @@ void auto_steering(){
 
   steeringPos = map(pwm_steering, 1000, 1900, -255, 255);
   
-  if (steeringPos > current_pos){
+  if (steeringPos > current_steering_pos){
     steering.step(1);
-    current_pos++;
+    current_steering_pos++;
   }
-  else if (steeringPos < current_pos){
+  else if (steeringPos < current_steering_pos){
     steering.step(-1);
-    current_pos--;
+    current_steering_pos--;
   }
 
 }
