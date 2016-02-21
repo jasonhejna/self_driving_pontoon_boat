@@ -12,7 +12,11 @@
 
 // toggle switches
 int auto_mode;
-int auto_mode_pin = 7;
+unsigned int auto_mode_pin = 7;
+
+//manual control potentiometer
+unsigned int manual_steering_pin = 2;
+int manual_steering_val = 0;
 
 //stepper motor
 #include <Stepper.h>
@@ -52,6 +56,8 @@ void setup(){
 
 void loop(){
   
+  auto_mode = digitalRead(auto_mode_pin);
+  
   if (auto_mode > 0){
     
     auto_throttle();
@@ -61,7 +67,7 @@ void loop(){
   }
   else{
 
-    manual_throttle();
+    //manual_throttle();
 
     manual_steering();
     
@@ -76,6 +82,23 @@ void manual_throttle(){
 }
 
 void manual_steering(){
+  
+  //Serial.println("m");
+  
+  manual_steering_val = analogRead(manual_steering_pin);
+
+  //Serial.println(manual_steering_val);
+
+  steeringPos = map(manual_steering_val, 0, 1024, -255, 255);
+  
+  if (steeringPos > current_pos){
+    steering.step(1);
+    current_pos++;
+  }
+  else if (steeringPos < current_pos){
+    steering.step(-1);
+    current_pos--;
+  }
   
 }
 
