@@ -10,8 +10,8 @@
 
 //stepper motor
 #include <Stepper.h>
-#define STEPS 200
-Stepper stepper(STEPS, 8, 9, 10, 11);
+#define STEPS 200     # number of steps in steering stepper motor
+Stepper steering(STEPS, 8, 9, 10, 11);
 int stepper_midpoint = 0;
 int min_bound = -300;
 int max_bound = 300;
@@ -25,7 +25,7 @@ int motor_speed = 0;
 // servo
 #include <Servo.h>
 Servo throttle;
-throttle.attach(13);
+int servoPos;
 
 
 void setup(){
@@ -34,32 +34,30 @@ void setup(){
   
   Serial.begin(9600);
 
-  stepper.setSpeed(60);
+  steering.setSpeed(60);
+  
+  throttle.attach(13);
 }
 
 
 
 void loop(){
 
-  //int granularity = 25;
-  //int maxpt = 1850;
-  //int minpt = 1050;
-  //int midpt = (maxpt + minpt) / 2;
-  //pwm_value = pulseIn(PWM_PIN, HIGH); // raw input
-  //pwm_value = max(min(pwm_value, maxpt), minpt);
-  //pwm_value = static_cast<double>(pwm_value - midpt)/(maxpt-midpt) * granularity; // reset zero and scale
-  //pwm_value *= static_cast<double>(255) / granularity; // scale
+  pwm_value = pulseIn(PWM_PIN, HIGH); // raw input
 
-  servoPos = map(val, 1000, 1900, 0, 180);
-
+  steeringPos = map(pwm_value, 1000, 1900, -255, 255);
+  throttlePos = map(pwm_value, 1000, 1900, 0, 180);
+  
+  throttle.write(throttlePos);
+  
   Serial.println(pwm_value);
   
   if (pwm_value > current_pos){
-    stepper.step(1);
+    steering.step(1);
     current_pos++;
   }
   else if (pwm_value < current_pos){
-    stepper.step(-1);
+    steering.step(-1);
     current_pos--;
   }
 
