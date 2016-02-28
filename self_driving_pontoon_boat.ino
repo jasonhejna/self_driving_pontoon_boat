@@ -10,12 +10,20 @@
 
 //TODO: turn off motor (heat)
 
+
 // LED
 unsigned int ledPin = 12;
 
 // toggle switches
 int auto_mode;
-unsigned int auto_mode_pin = 7;
+int pause_mode;
+unsigned int auto_mode_pin = 6;
+unsigned int pause_mode_pin = 7;
+
+bool first_loop = false;
+
+// auto mode state
+bool auto_mode_state = false;
 
 //manual control potentiometers
 unsigned int manual_steering_pin = 2;
@@ -48,11 +56,11 @@ void setup(){
   pinMode(STEERING_PIN, INPUT);
   pinMode(THROTTLE_PIN, INPUT);
   
-  Serial.begin(9600);
+  //Serial.begin(9600);
 
   steering.setSpeed(60);
   
-  throttle.attach(13);
+  throttle.attach(13); // servo on in 13
 
   auto_mode = digitalRead(auto_mode_pin);
 
@@ -62,27 +70,52 @@ void setup(){
 
 
 void loop(){
-  
-  auto_mode = digitalRead(auto_mode_pin);
-  
-  if (auto_mode > 0){
 
-    auto_throttle();
+  pause_mode = digitalRead(pause_mode_pin);   //1:unpressed 0:depressed (engaged)
 
-    auto_steering();
-
-    digitalWrite(ledPin, HIGH);
-      
-  }
-  else{
-
+  if (pause_mode == 0){
+    
     manual_throttle();
 
-    //manual_steering(); //TODO set pin to new potentiometer and uncomment
+    //manual_steering(); //TODO: set pin to new potentiometer and uncomment
+
+    auto_mode_state = false; // TODO: nest in if to check auto_mode_state
 
     digitalWrite(ledPin, LOW);
     
   }
+  else{
+
+    if (auto_mode_state == false){
+      
+      auto_mode = digitalRead(auto_mode_pin);
+
+      if (auto_mode == 1){
+        auto_mode_state = true;
+        digitalWrite(ledPin, HIGH);
+      }
+      
+    }
+
+    if (auto_mode_state == true){
+      
+      auto_throttle();
+
+      auto_steering();
+      
+    }
+    else{
+      
+      manual_throttle();
+
+      //manual_steering(); //TODO set pin to new potentiometer and uncomment
+      
+      digitalWrite(ledPin, LOW);
+    }
+
+  }
+
+  
 
 }
 
