@@ -131,9 +131,10 @@ void loop(){
 }
 
 void manual_throttle(){
-  // read PWM value from Pixhawk,
+  // Executed in every main loop cycle.
+  // read potentiometer value,
   // map it to motor value,
-  // move motor to new position
+  // move motor to new position.
   
   manual_throttle_val = analogRead(manual_throttle_pin);
 
@@ -144,6 +145,10 @@ void manual_throttle(){
 }
 
 void manual_steering(){
+  // Executed in every main loop cycle
+  // read potentiometer value,
+  // map it to motor value,
+  // move stepper motor one step closed to it's target rotation angle (freeing up processor cycles).
   
   manual_steering_val = analogRead(manual_steering_pin);
 
