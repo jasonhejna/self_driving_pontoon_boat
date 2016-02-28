@@ -12,7 +12,8 @@
 
 
 // LED
-unsigned int ledPin = 12;
+int auto_ledPin = 29;
+int manu_ledPin = 31;
 
 // toggle switches
 int auto_mode;
@@ -64,7 +65,8 @@ void setup(){
 
   auto_mode = digitalRead(auto_mode_pin);
 
-  pinMode(ledPin, OUTPUT);
+  pinMode(auto_ledPin, OUTPUT);
+  pinMode(manu_ledPin, OUTPUT);
 }
 
 
@@ -81,7 +83,8 @@ void loop(){
 
     auto_mode_state = false; // TODO: nest in if to check auto_mode_state
 
-    digitalWrite(ledPin, LOW);
+    digitalWrite(auto_ledPin, LOW);
+    digitalWrite(manu_ledPin, HIGH);
     
   }
   else{
@@ -92,7 +95,8 @@ void loop(){
 
       if (auto_mode == 1){
         auto_mode_state = true;
-        digitalWrite(ledPin, HIGH);
+        digitalWrite(auto_ledPin, HIGH);
+        digitalWrite(manu_ledPin, LOW);
       }
       
     }
@@ -110,7 +114,8 @@ void loop(){
 
       //manual_steering(); //TODO set pin to new potentiometer and uncomment
       
-      digitalWrite(ledPin, LOW);
+      digitalWrite(auto_ledPin, LOW);
+      digitalWrite(manu_ledPin, HIGH);
     }
 
   }
