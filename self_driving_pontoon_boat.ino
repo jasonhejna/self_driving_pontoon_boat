@@ -73,27 +73,31 @@ void setup(){
 
 void loop(){
 
-  pause_mode = digitalRead(pause_mode_pin);   //1:unpressed 0:depressed (engaged)
+  pause_mode = digitalRead(pause_mode_pin);
 
+  // Pause Mode switch is engaged 1:unpressed 0:depressed (engaged)
   if (pause_mode == 0){
     
     manual_throttle();
 
     //manual_steering(); //TODO: set pin to new potentiometer and uncomment
 
-    auto_mode_state = false; // TODO: nest in if to check auto_mode_state
-
-    digitalWrite(auto_ledPin, LOW);
-    digitalWrite(manu_ledPin, HIGH);
-    
+    if (auto_mode_state == true){
+      auto_mode_state = false;
+      digitalWrite(auto_ledPin, LOW);
+      digitalWrite(manu_ledPin, HIGH);
+    }
   }
+  // Pause Mode switch is disengaged 1:unpressed 0:depressed (engaged)
   else{
 
+    // check for start button press, it's a momentary button
     if (auto_mode_state == false){
-      
+
       auto_mode = digitalRead(auto_mode_pin);
 
       if (auto_mode == 1){
+        // boolean we set on button press to indicate auto mode on, until pause button press
         auto_mode_state = true;
         digitalWrite(auto_ledPin, HIGH);
         digitalWrite(manu_ledPin, LOW);
@@ -101,6 +105,7 @@ void loop(){
       
     }
 
+    // auto_mode button pressed, and so far no interrupt from pause button
     if (auto_mode_state == true){
       
       auto_throttle();
@@ -108,6 +113,7 @@ void loop(){
       auto_steering();
       
     }
+    // pause button unpressed, but auto mode has not been engaged yet
     else{
       
       manual_throttle();
@@ -125,6 +131,9 @@ void loop(){
 }
 
 void manual_throttle(){
+  // read PWM value from Pixhawk,
+  // map it to motor value,
+  // move motor to new position
   
   manual_throttle_val = analogRead(manual_throttle_pin);
 
