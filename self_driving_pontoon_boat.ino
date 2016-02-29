@@ -18,8 +18,8 @@ int manu_ledPin = 31;
 // toggle switches
 int auto_mode;
 int pause_mode;
-unsigned int auto_mode_pin = 6;
-unsigned int pause_mode_pin = 7;
+unsigned int auto_mode_pin = 33;
+unsigned int pause_mode_pin = 35;
 
 bool first_loop = false;
 
@@ -32,17 +32,20 @@ int manual_steering_val;
 unsigned int manual_throttle_pin = 2;
 int manual_throttle_val;
 
-//stepper motor
+// stepper motor
 #include <Stepper.h>
 #define STEPS 200                       // number of steps in steering stepper motor
-Stepper steering(STEPS, 8, 9, 10, 11);
+Stepper steering(STEPS, 10, 11, 12, 13);
 int steeringPos;
 int stepper_midpoint = 0;
 int current_steering_pos = 0;
 
+// servo
+int servo_throttle_pin = 27;
+
 // pwm decode
-unsigned int STEERING_PIN = 2;
-unsigned int THROTTLE_PIN = 5;
+int STEERING_PIN = 2;
+int THROTTLE_PIN = 3;
 int pwm_steering;
 int pwm_throttle;
 
@@ -57,16 +60,18 @@ void setup(){
   pinMode(STEERING_PIN, INPUT);
   pinMode(THROTTLE_PIN, INPUT);
   
-  //Serial.begin(9600);
+  Serial.begin(9600);
 
   steering.setSpeed(60);
   
-  throttle.attach(13); // servo on in 13
+  throttle.attach(servo_throttle_pin);
 
   auto_mode = digitalRead(auto_mode_pin);
 
   pinMode(auto_ledPin, OUTPUT);
   pinMode(manu_ledPin, OUTPUT);
+
+  digitalWrite(manu_ledPin, HIGH);
 }
 
 
@@ -78,9 +83,9 @@ void loop(){
   // Pause Mode switch is engaged 1:unpressed 0:depressed (engaged)
   if (pause_mode == 0){
     
-    manual_throttle();
+    //manual_throttle();
 
-    //manual_steering(); //TODO: set pin to new potentiometer and uncomment
+    manual_steering(); //TODO: set pin to new potentiometer and uncomment
 
     if (auto_mode_state == true){
       auto_mode_state = false;
@@ -116,9 +121,9 @@ void loop(){
     // pause button unpressed, but auto mode has not been engaged yet
     else{
       
-      manual_throttle();
+      //manual_throttle();
 
-      //manual_steering(); //TODO set pin to new potentiometer and uncomment
+      manual_steering(); //TODO set pin to new potentiometer and uncomment
       
       digitalWrite(auto_ledPin, LOW);
       digitalWrite(manu_ledPin, HIGH);
@@ -182,6 +187,12 @@ void auto_steering(){
   // autopilot steering
 
   pwm_steering = pulseIn(STEERING_PIN, HIGH); // PWM decoding raw input
+
+  // no signal recieved from pixhawk
+  if (pwm_steering > 1900 || pwm_steering < 1000){
+    return;
+    // TODO: think about returning to manual mode (read pixhawk values)
+  }
 
   steeringPos = map(pwm_steering, 1000, 1900, -255, 255);
   
